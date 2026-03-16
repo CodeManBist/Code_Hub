@@ -47,7 +47,19 @@ yargs(hideBin(process.argv))
 
 .command("pull", "Pull latest changes", {}, pullRepo)
 
-.command("revert", "Revert last commit", {}, revertRepo)
+.command(
+  "revert <commitId>", 
+  "Revert last commit", 
+  (yargs) => {
+    yargs.positional("commitId",   {
+      describe: "Commit ID to revert to",
+      type: "string",
+    });
+  }, 
+  (argv) => {
+    revertRepo(argv.commitId);
+  }
+)
 
 .demandCommand(1, "You need at least one command")
 .help()
