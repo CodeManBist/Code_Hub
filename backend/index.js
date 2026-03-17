@@ -11,6 +11,8 @@ const { revertRepo } = require("./controllers/revert");
 
 yargs(hideBin(process.argv))
 
+.command("start", "Starts a new server", {}, startServer)
+
 .command("init", "Initialize a new repository", {}, initRepo)
 
 .command("status", "Check repository status", {}, statusRepo)
@@ -64,3 +66,8 @@ yargs(hideBin(process.argv))
 .demandCommand(1, "You need at least one command")
 .help()
 .parse();
+
+function startServer() {
+  console.log("Server logic called");
+}
+
