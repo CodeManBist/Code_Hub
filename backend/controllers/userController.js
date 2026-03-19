@@ -6,7 +6,7 @@ const User = require("../models/userModel");
 dotenv.config();
 
 const getAllUsers = (req, res) => {
-    res.send('Get all users');
+    const users = User.find({ })
 }
 
 const signUp = async (req, res) => {
@@ -36,8 +36,48 @@ const signUp = async (req, res) => {
 }
 
 const login = async (req, res) => {
+    const { email, password } = req.body;
 
-}
+    if (!email || !password) {
+        return res.status(400).json({ message: "All fields required" });
+    }
+
+    try {
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(400).json({ message: 'Invalid email or password' });
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if (!isPasswordValid) {
+            return res.status(400).json({ message: 'Invalid email or password' });
+        }
+
+        const token = jwt.sign(
+            { userId: user._id, email: user.email },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+
+        res.status(200).json({
+            message: 'Login successful',
+            token,
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email
+            }
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            message: 'Error logging in user',
+            error: err.message
+        });
+    }
+};
 
 const getUserProfile = (req,res) => {
     res.send('Get user profile');
