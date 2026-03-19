@@ -14,6 +14,7 @@ const UserSchema = new Schema({
     },
     password: {
         type: String,
+        required: true
     },
     repositories: [
         {
@@ -39,4 +40,4 @@ const UserSchema = new Schema({
 }, { timestamps: true });       
 
 const User = mongoose.model("User", UserSchema);
-export default User;
+module.exports = User;
