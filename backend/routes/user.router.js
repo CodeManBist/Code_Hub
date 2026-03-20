@@ -5,8 +5,8 @@ const userController = require("../controllers/userController");
 userRouter.get("/allUsers", userController.getAllUsers);
 userRouter.post("/signup", userController.signUp);
 userRouter.post("/login", userController.login);
-userRouter.get("/userProfile", userController.getUserProfile);
-userRouter.put("/updateProfile", userController.updateUserProfile);
-userRouter.delete("/deleteProfile", userController.deleteUserProfile);
+userRouter.get("/userProfile/:id", userController.getUserProfile);
+userRouter.put("/updateProfile/:id", userController.updateUserProfile);
+userRouter.delete("/deleteProfile/:id", userController.deleteUserProfile);
 
 module.exports = userRouter;

@@ -5,8 +5,20 @@ const User = require("../models/userModel");
 
 dotenv.config();
 
-const getAllUsers = (req, res) => {
-    const users = User.find({ })
+async function getAllUsers(req, res) {
+    try {
+        const users = await User.find({})
+            .select('-password')
+            .lean();
+
+        res.status(200).json({
+            success: true,
+            count: users.length,
+            data: users
+        });
+    } catch (err) {
+        res.status(500).json({ message: 'Error fetching users', error: err.message });
+    }
 }
 
 const signUp = async (req, res) => {
@@ -79,15 +91,26 @@ const login = async (req, res) => {
     }
 };
 
-const getUserProfile = (req,res) => {
-    res.send('Get user profile');
+async function getUserProfile(req, res) {
+    const userId = req.params.id;
+    console.log('User ID from params:', userId);
+
+    try {
+        const user = await User.findById(userId).select('-password').lean();
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json({ success: true, data: user });
+    } catch (err) {
+        res.status(500).json({ message: 'Error fetching user profile', error: err.message });
+    }
 }
 
-const updateUserProfile = (req, res) => {
+async function updateUserProfile(req, res) {
     res.send('Update user profile');
 }
 
-const deleteUserProfile = (req, res) => {
+async function deleteUserProfile(req, res) {
     res.send('Delete user profile');
 }
 
