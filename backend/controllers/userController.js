@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const dotenv = require("dotenv");
@@ -107,11 +108,64 @@ async function getUserProfile(req, res) {
 }
 
 async function updateUserProfile(req, res) {
-    res.send('Update user profile');
+    const userId = req.params.id;
+
+     if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({ message: 'Invalid user ID' });
+    }
+
+    try {
+        const allowedUpdates = ['username', "email"];
+        const updates = {};
+
+        Object.keys(req.body).forEach(key => {
+            if (allowedUpdates.includes(key)) {
+                updates[key] = req.body[key];
+            }
+        });
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId, 
+            { $set: updates }, 
+            { new: true, runValidators: true }
+        ).select('-password');
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        
+        res.status(200).json({ 
+            success: true, 
+            message: 'User profile updated successfully', 
+            data: updatedUser 
+        });
+
+    } catch (err) {
+        res.status(500).json({ message: 'Error updating user profile', error: err.message });   
+    }
 }
 
 async function deleteUserProfile(req, res) {
-    res.send('Delete user profile');
+    const userId = req.params.id;
+
+    try {
+        const deletedUser = await User.findByIdAndDelete(userId);
+
+        if (!deletedUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Account deleted successfully'
+        });
+
+    } catch (err) {
+        res.status(500).json({
+            message: 'Error deleting account',
+            error: err.message
+        });
+    }
 }
 
 module.exports = {
