@@ -23,6 +23,7 @@ async function createRepository(req, res) {
         const result = await newRepository.save();
         res.status(201).json({ message: "Repository created successfully", repositoryId: result._id });
     } catch (error) {
+        console.error("Error creating repository:", error);
         res.status(500).json({ error: "Failed to create repository" });
     }
 }

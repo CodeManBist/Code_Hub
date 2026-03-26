@@ -11,7 +11,7 @@ const RepositorySchema = new Schema({
     type: String
   },
   content: {
-    type: String
+    type: [String]
   },
   visibility: {
     type: Boolean,
