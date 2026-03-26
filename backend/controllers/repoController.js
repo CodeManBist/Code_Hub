@@ -29,17 +29,45 @@ async function createRepository(req, res) {
 }
 
 async function getAllRepositories(req, res) {
-    res.send("List of all repositories");
+    try {
+        const repositories = await Repository.find({}).populate("owner").populate("issues");
+        res.status(200).json(repositories);
+    } catch (error) {
+        console.error("Error fetching repositories:", error);
+        res.status(500).json({ error: "Failed to fetch repositories" });
+    }
 }
 
 async function getRepositoryById(req, res) {
-    const { id } = req.params;
-    res.send(`Details of repository with ID: ${id}`);
+    const repoId = req.params.id;
+    
+    try {
+        const repository = await Repository.findById(repoId).populate("owner").populate("issues");
+
+        if(!repository) {
+            return res.status(404).json({ error: "Repository not found" });
+        }
+        res.status(200).json(repository);
+
+    } catch (error) {
+        console.error("Error fetching repository by ID:", error);
+        res.status(500).json({ error: "Failed to fetch repository" });
+    }
 }
 
 async function getRepositoryByName(req, res) {
     const { name } = req.params;
-    res.send(`Details of repository with name: ${name}`);
+    try {
+        const repository = await Repository.findOne({ name: name }).populate("owner").populate("issues");
+
+        if(!repository) {
+            return res.status(404).json({ error: "Repository not found" });
+        }
+        res.status(200).json(repository);
+    } catch (error) {
+        console.error("Error fetching repository by name:", error);
+        res.status(500).json({ error: "Failed to fetch repository" });
+    }
 }
 
 async function getRepositoriesforCurrentUser(req, res) {
