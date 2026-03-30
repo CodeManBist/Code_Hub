@@ -42,7 +42,7 @@ const signUp = async (req, res) => {
             { expiresIn: '1h' } 
         );
 
-        res.status(201).json({ message: 'User created successfully', token });
+        res.status(201).json({ message: 'User created successfully', token, userId: savedUser._id });
     } catch (err) {
         res.status(500).json({ message: 'Error signing up user', error: err.message });
     }
@@ -56,7 +56,7 @@ const login = async (req, res) => {
     }
 
     try {
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email }).select('+password');
 
         if (!user) {
             return res.status(400).json({ message: 'Invalid email or password' });
@@ -77,11 +77,7 @@ const login = async (req, res) => {
         res.status(200).json({
             message: 'Login successful',
             token,
-            user: {
-                id: user._id,
-                username: user.username,
-                email: user.email
-            }
+            userId: user._id
         });
 
     } catch (err) {
