@@ -21,6 +21,15 @@ const RepositorySchema = new Schema({
     ref: "User",
     required: true
   },
+  stargazers: {
+    type: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User"
+      }
+    ],
+    default: []
+  },
   issues: [
     {
         type: Schema.Types.ObjectId,

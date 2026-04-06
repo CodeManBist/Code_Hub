@@ -3,6 +3,19 @@ const Repository = require("../models/repoModel");
 const User = require("../models/userModel");
 const Issue = require("../models/issueModel");
 
+function isValidObjectId(id) {
+    return mongoose.Types.ObjectId.isValid(id);
+}
+
+function normalizeRepository(repository) {
+    const plainRepository = repository.toObject ? repository.toObject() : repository;
+
+    return {
+        ...plainRepository,
+        starsCount: Array.isArray(plainRepository.stargazers) ? plainRepository.stargazers.length : 0
+    };
+}
+
 async function createRepository(req, res) {
     const { owner, name, issues, content, description, visibility } = req.body;
 
@@ -31,7 +44,7 @@ async function createRepository(req, res) {
 async function getAllRepositories(req, res) {
     try {
         const repositories = await Repository.find({}).populate("owner").populate("issues");
-        res.status(200).json(repositories);
+        res.status(200).json(repositories.map(normalizeRepository));
     } catch (error) {
         console.error("Error fetching repositories:", error);
         res.status(500).json({ error: "Failed to fetch repositories" });
@@ -47,7 +60,7 @@ async function getRepositoryById(req, res) {
         if(!repository) {
             return res.status(404).json({ error: "Repository not found" });
         }
-        res.status(200).json(repository);
+        res.status(200).json(normalizeRepository(repository));
 
     } catch (error) {
         console.error("Error fetching repository by ID:", error);
@@ -63,7 +76,7 @@ async function getRepositoryByName(req, res) {
         if(!repository) {
             return res.status(404).json({ error: "Repository not found" });
         }
-        res.status(200).json(repository);
+        res.status(200).json(normalizeRepository(repository));
     } catch (error) {
         console.error("Error fetching repository by name:", error);
         res.status(500).json({ error: "Failed to fetch repository" });
@@ -79,10 +92,92 @@ async function getRepositoriesforCurrentUser(req, res) {
         if(!repositories || repositories.length === 0   ) {
             return res.status(404).json({ error: "No repositories found for this user" });
         }
-        res.status(200).json({ message: "Repositories found!", repositories });
+        res.status(200).json({ message: "Repositories found!", repositories: repositories.map(normalizeRepository) });
     } catch(error) {
         console.error("Error fetching repositories for user:", error);
         res.status(500).json({ error: "Failed to fetch repositories for user" });
+    }
+}
+
+async function starRepository(req, res) {
+    const { id } = req.params;
+    const { userId } = req.body;
+
+    if (!isValidObjectId(id) || !isValidObjectId(userId)) {
+        return res.status(400).json({ error: "Invalid repository or user ID" });
+    }
+
+    try {
+        const repository = await Repository.findById(id);
+        const user = await User.findById(userId);
+
+        if (!repository) {
+            return res.status(404).json({ error: "Repository not found" });
+        }
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const alreadyStarred = repository.stargazers.some((starUserId) => String(starUserId) === String(userId));
+
+        if (!alreadyStarred) {
+            repository.stargazers.push(userId);
+            user.starRepos.addToSet(repository._id);
+
+            await repository.save();
+            await user.save();
+        }
+
+        const updatedRepository = await Repository.findById(id).populate("owner").populate("issues");
+
+        res.status(200).json({
+            message: alreadyStarred ? "Repository already starred" : "Repository starred successfully",
+            repository: normalizeRepository(updatedRepository),
+            alreadyStarred: true
+        });
+    } catch (error) {
+        console.error("Error starring repository:", error);
+        res.status(500).json({ error: "Failed to star repository" });
+    }
+}
+
+async function unstarRepository(req, res) {
+    const { id } = req.params;
+    const { userId } = req.body;
+
+    if (!isValidObjectId(id) || !isValidObjectId(userId)) {
+        return res.status(400).json({ error: "Invalid repository or user ID" });
+    }
+
+    try {
+        const repository = await Repository.findById(id);
+        const user = await User.findById(userId);
+
+        if (!repository) {
+            return res.status(404).json({ error: "Repository not found" });
+        }
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        repository.stargazers = repository.stargazers.filter((starUserId) => String(starUserId) !== String(userId));
+        user.starRepos = user.starRepos.filter((starRepoId) => String(starRepoId) !== String(id));
+
+        await repository.save();
+        await user.save();
+
+        const updatedRepository = await Repository.findById(id).populate("owner").populate("issues");
+
+        res.status(200).json({
+            message: "Repository unstarred successfully",
+            repository: normalizeRepository(updatedRepository),
+            starred: false
+        });
+    } catch (error) {
+        console.error("Error unstarring repository:", error);
+        res.status(500).json({ error: "Failed to unstar repository" });
     }
 }
 
@@ -149,6 +244,8 @@ module.exports = {
     getRepositoryById,
     getRepositoryByName,
     getRepositoriesforCurrentUser,
+    starRepository,
+    unstarRepository,
     updateRepositoryById,
     toggleVisibilityById,
     deleteRepositoryById

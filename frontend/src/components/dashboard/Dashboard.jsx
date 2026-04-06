@@ -13,32 +13,51 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('repos');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  useEffect(() => {
+  const refreshRepositories = async () => {
     const userId = localStorage.getItem("userId");
 
-    const fetchRepositories = async () => {
-      try {
-        const response = await fetch(`http://localhost:3000/repo/user/${userId}`);
-        const data = await response.json();
-        setRepositories(data.repositories);
-      } catch (error) {
-        console.error('Error fetching repositories:', error);
-      }
-    };
+    try {
+      const [userReposResponse, suggestedReposResponse] = await Promise.all([
+        fetch(`http://localhost:3000/repo/user/${userId}`),
+        fetch(`http://localhost:3000/repo/all`)
+      ]);
 
-    const fetchSuggestedRepositories = async () => {
-      try {
-        const response = await fetch(`http://localhost:3000/repo/all`);
-        const data = await response.json();
-        setSuggestedRepositories(data);
-      } catch (error) {
-        console.error('Error fetching repositories:', error);
-      }
-    };
+      const userReposData = await userReposResponse.json();
+      const suggestedReposData = await suggestedReposResponse.json();
 
-    fetchRepositories();
-    fetchSuggestedRepositories();
+      setRepositories(userReposData.repositories || []);
+      setSuggestedRepositories(Array.isArray(suggestedReposData) ? suggestedReposData : []);
+    } catch (error) {
+      console.error('Error fetching repositories:', error);
+    }
+  };
+
+  useEffect(() => {
+    refreshRepositories();
   }, []);
+
+  const handleStarToggle = async (repo) => {
+    const userId = localStorage.getItem("userId");
+    const isStarred = Array.isArray(repo.stargazers) && repo.stargazers.some((starUserId) => String(starUserId) === String(userId));
+
+    try {
+      const response = await fetch(`http://localhost:3000/repo/${repo._id}/star`, {
+        method: isStarred ? 'DELETE' : 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ userId })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update star');
+      }
+
+      await refreshRepositories();
+    } catch (error) {
+      console.error('Error toggling star:', error);
+    }
+  };
 
   useEffect(() => {
     if (searchQuery === '') {
@@ -60,7 +79,7 @@ const Dashboard = () => {
         {/* MOBILE DRAWER */}
         {isSidebarOpen && (
           <div className="fixed inset-0 z-50 bg-black/50">
-            <div className="w-[260px] h-full bg-[#161b22] p-4">
+            <div className="w-65 h-full bg-[#161b22] p-4">
               <button onClick={() => setIsSidebarOpen(false)} className="mb-4">Close</button>
               <h2 className="text-lg font-semibold mb-4">Explore</h2>
               {suggestedRepositories.map(repo => (
@@ -107,7 +126,7 @@ const Dashboard = () => {
               value={searchQuery}
               placeholder="Search repositories..."
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full sm:w-[300px] px-4 py-2 rounded-md bg-[#161b22] border border-[#30363d] focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full sm:w-75 px-4 py-2 rounded-md bg-[#161b22] border border-[#30363d] focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -134,14 +153,17 @@ const Dashboard = () => {
                   <div className="flex justify-between items-center mb-2">
                     <div className="flex items-center gap-2">
                       <GoRepo className="text-gray-400" />
-                      <h3 className="text-lg font-semibold text-blue-400 hover:underline">
+                      <h3 className="text-lg font-semibold text-blue-400 hover:underline cursor-pointer">
                         {repo.name}
                       </h3>
                     </div>
 
-                    <button className="flex items-center gap-1 text-xs px-3 py-1 border border-[#30363d] rounded-md hover:bg-[#1f2937]">
+                    <button
+                      onClick={() => handleStarToggle(repo)}
+                      className="flex items-center gap-1 text-xs px-3 py-1 border border-[#30363d] rounded-md hover:bg-[#1f2937]"
+                    >
                       <FaStar className="text-yellow-400" />
-                      Star
+                      {Array.isArray(repo.stargazers) && repo.stargazers.some((starUserId) => String(starUserId) === String(localStorage.getItem("userId"))) ? 'Unstar' : 'Star'}
                     </button>
                   </div>
 
@@ -153,7 +175,7 @@ const Dashboard = () => {
                       JavaScript
                     </span>
                     <span className="flex items-center gap-1">
-                      <FaStar /> 0
+                      <FaStar /> {repo.starsCount ?? (Array.isArray(repo.stargazers) ? repo.stargazers.length : 0)}
                     </span>
                     <span>Updated recently</span>
                   </div>
