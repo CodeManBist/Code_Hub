@@ -128,7 +128,7 @@ const Profile = () => {
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-10">
               <div className="shrink-0">
                 <img
-                  src="profile.webp"
+                  src="/profile.webp"
                   alt="Profile"
                   className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full object-cover border border-[#30363d] bg-[#0d1117]"
                 />

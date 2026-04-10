@@ -3,7 +3,6 @@ import { Navigate as Redirect, useLocation, useNavigate, useRoutes } from 'react
 
 // Page List
 import Dashboard from "./components/dashboard/Dashboard";
-import Users from "./components/user/Users";
 import Profile from "./components/user/Profile";
 import RepoDetail from "./components/repo/RepoDetail";
 import CreateRepository from "./components/repo/CreateRepository";
@@ -11,7 +10,7 @@ import Login from "./components/auth/Login";
 import Signup from "./components/auth/Signup";
 
 // Auth Context
-import { useAuth, AuthProvider } from "./authContext";
+import { useAuth } from "./authContext";
 
 const ProjectRoutes = () => {
     const { currentUser, setCurrentUser } = useAuth();
@@ -41,10 +40,6 @@ const ProjectRoutes = () => {
         {
             path: "/dashboard",
             element: <Dashboard />
-        },
-        {
-            path: "/users",
-            element: <Users />
         },
         {
             path: "/repo/:id",
