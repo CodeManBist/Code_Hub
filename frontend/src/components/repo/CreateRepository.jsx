@@ -15,6 +15,12 @@ const CreateRepository = () => {
     const owner = localStorage.getItem("userId");
 
     if (!owner) {
+      window.alert("You need to be logged in to create a repository.");
+      return;
+    }
+
+    if (!name.trim()) {
+      window.alert("Repository name is required.");
       return;
     }
 
@@ -45,9 +51,11 @@ const CreateRepository = () => {
         throw new Error(data.error || "Failed to create repository");
       }
 
+      window.alert("Repository created successfully.");
       navigate(`/repo/${data.repositoryId}`);
     } catch (error) {
       console.error("Error creating repository:", error);
+      window.alert(error.message || "Failed to create repository.");
     } finally {
       setIsSubmitting(false);
     }

@@ -73,8 +73,10 @@ const RepoDetail = () => {
       }
 
       fetchRepository();
+      window.alert("Repository updated successfully.");
     } catch (error) {
       console.error("Error updating repository:", error);
+      window.alert(error.message || "Failed to update repository.");
     }
   };
 
@@ -91,12 +93,19 @@ const RepoDetail = () => {
       }
 
       fetchRepository();
+      window.alert("Repository visibility updated.");
     } catch (error) {
       console.error("Error toggling visibility:", error);
+      window.alert(error.message || "Failed to toggle repository visibility.");
     }
   };
 
   const handleDeleteRepository = async () => {
+    const shouldDelete = window.confirm("Are you sure you want to delete this repository?");
+    if (!shouldDelete) {
+      return;
+    }
+
     try {
       const response = await fetch(`http://localhost:3000/repo/delete/${id}`, {
         method: "DELETE"
@@ -108,14 +117,21 @@ const RepoDetail = () => {
         throw new Error(data.error || "Failed to delete repository");
       }
 
+      window.alert("Repository deleted successfully.");
       navigate("/dashboard");
     } catch (error) {
       console.error("Error deleting repository:", error);
+      window.alert(error.message || "Failed to delete repository.");
     }
   };
 
   const handleCreateIssue = async (e) => {
     e.preventDefault();
+
+    if (!issueTitle.trim() || !issueDescription.trim()) {
+      window.alert("Issue title and description are required.");
+      return;
+    }
 
     try {
       const response = await fetch(`http://localhost:3000/issue/create/${id}`, {
@@ -139,8 +155,10 @@ const RepoDetail = () => {
       setIssueDescription("");
       fetchIssues();
       fetchRepository();
+      window.alert("Issue created successfully.");
     } catch (error) {
       console.error("Error creating issue:", error);
+      window.alert(error.message || "Failed to create issue.");
     }
   };
 
@@ -173,12 +191,19 @@ const RepoDetail = () => {
 
       setEditingIssueId(null);
       fetchIssues();
+      window.alert("Issue updated successfully.");
     } catch (error) {
       console.error("Error updating issue:", error);
+      window.alert(error.message || "Failed to update issue.");
     }
   };
 
   const handleDeleteIssue = async (issueId) => {
+    const shouldDelete = window.confirm("Delete this issue?");
+    if (!shouldDelete) {
+      return;
+    }
+
     try {
       const response = await fetch(`http://localhost:3000/issue/delete/${issueId}`, {
         method: "DELETE"
@@ -191,8 +216,10 @@ const RepoDetail = () => {
       }
 
       fetchIssues();
+      window.alert("Issue deleted successfully.");
     } catch (error) {
       console.error("Error deleting issue:", error);
+      window.alert(error.message || "Failed to delete issue.");
     }
   };
 
