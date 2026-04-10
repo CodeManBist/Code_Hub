@@ -3,8 +3,42 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const dotenv = require("dotenv");
 const User = require("../models/userModel");
+const Repository = require("../models/repoModel");
+const Issue = require("../models/issueModel");
 
 dotenv.config();
+
+function getDateKeyFromDocument(doc) {
+    if (!doc) return null;
+
+    const fallbackDate = doc._id && typeof doc._id.getTimestamp === "function"
+        ? doc._id.getTimestamp()
+        : null;
+
+    const sourceDate = doc.createdAt || fallbackDate;
+    if (!sourceDate) return null;
+
+    return new Date(sourceDate).toISOString().slice(0, 10);
+}
+
+async function buildContributionHeatmap(userId) {
+    const [repositories, issues] = await Promise.all([
+        Repository.find({ owner: userId }).select("_id createdAt").lean(),
+        Issue.find({ author: userId }).select("_id createdAt").lean()
+    ]);
+
+    const bucket = new Map();
+
+    [...repositories, ...issues].forEach((item) => {
+        const dayKey = getDateKeyFromDocument(item);
+        if (!dayKey) return;
+        bucket.set(dayKey, (bucket.get(dayKey) || 0) + 1);
+    });
+
+    return [...bucket.entries()]
+        .map(([date, count]) => ({ date, count }))
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+}
 
 async function getAllUsers(req, res) {
     try {
@@ -101,13 +135,15 @@ async function getUserProfile(req, res) {
         const normalizedFollowing = Array.isArray(user.following) ? user.following : [];
         const normalizedFollowers = Array.isArray(user.followers) ? user.followers : [];
         const { followedUsers, ...safeUser } = user;
+        const contributionHeatmap = await buildContributionHeatmap(userId);
 
         res.status(200).json({
             success: true,
             data: {
                 ...safeUser,
                 following: normalizedFollowing,
-                followers: normalizedFollowers
+                followers: normalizedFollowers,
+                contributionHeatmap
             }
         });
     } catch (err) {

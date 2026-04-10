@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../Navbar";
 import { useNavigate, useParams } from "react-router-dom";
+import HeatMap from "@uiw/react-heat-map";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -206,6 +207,37 @@ const Profile = () => {
                 )}
               </div>
             </div>
+          </div>
+        </section>
+
+        <section className="max-w-4xl mx-auto mt-6">
+          <div className="rounded-2xl border border-[#30363d] bg-[#161b22] p-5 sm:p-7 md:p-8 shadow-lg shadow-black/20">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-white">Contribution Heatmap</h3>
+              <span className="text-xs text-gray-400">Last 12 months</span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <HeatMap
+                value={Array.isArray(user?.contributionHeatmap) ? user.contributionHeatmap : []}
+                startDate={new Date(new Date().setFullYear(new Date().getFullYear() - 1))}
+                endDate={new Date()}
+                width={860}
+                rectSize={12}
+                space={3}
+                panelColors={{
+                  0: "#161b22",
+                  1: "#0e4429",
+                  2: "#006d32",
+                  3: "#26a641",
+                  4: "#39d353"
+                }}
+              />
+            </div>
+
+            {(!user?.contributionHeatmap || user.contributionHeatmap.length === 0) && (
+              <p className="text-xs text-gray-400 mt-3">No contribution data yet.</p>
+            )}
           </div>
         </section>
       </main>

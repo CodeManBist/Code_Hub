@@ -159,7 +159,8 @@ const RepoDetail = () => {
         body: JSON.stringify({
           title: issueTitle,
           description: issueDescription,
-          status: issueStatus
+          status: issueStatus,
+          author: localStorage.getItem("userId")
         })
       });
 

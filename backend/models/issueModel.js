@@ -20,7 +20,11 @@ const IssueSchema = new Schema({
         ref: 'Repository',
         required: true
     },
-});
+    author: {
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    }
+}, { timestamps: true });
 
 const Issue = mongoose.model('Issue', IssueSchema);
 module.exports = Issue; 

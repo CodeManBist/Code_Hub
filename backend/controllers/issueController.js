@@ -4,7 +4,7 @@ const User = require('../models/userModel');
 const Issue = require('../models/issueModel');
 
 async function createIssue(req, res) {
-    const { title, description, status } = req.body;
+    const { title, description, status, author } = req.body;
     const id = req.params.id || req.query.id || req.body.repository || req.body.repositoryId;
 
     try {
@@ -21,7 +21,8 @@ async function createIssue(req, res) {
             title,
             description,
             status,
-            repository: id
+            repository: id,
+            author
         });
         await issue.save();
         repo.issues.push(issue._id);
