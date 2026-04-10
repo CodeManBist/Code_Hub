@@ -4,30 +4,35 @@ import { Link } from 'react-router-dom';
 import { GoRepo } from "react-icons/go";
 import { FaStar } from "react-icons/fa";
 import { GoDotFill } from "react-icons/go";
-import { MdEvent } from "react-icons/md";
 
 const Dashboard = () => {
   const [repositories, setRepositories] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestedRepositories, setSuggestedRepositories] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
+  const [userSearchQuery, setUserSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [activeTab, setActiveTab] = useState('repos');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const currentUserId = localStorage.getItem("userId");
 
   const refreshRepositories = async () => {
     const userId = localStorage.getItem("userId");
 
     try {
-      const [userReposResponse, suggestedReposResponse] = await Promise.all([
+      const [userReposResponse, suggestedReposResponse, allUsersResponse] = await Promise.all([
         fetch(`http://localhost:3000/repo/user/${userId}`),
-        fetch(`http://localhost:3000/repo/all`)
+        fetch(`http://localhost:3000/repo/all`),
+        fetch(`http://localhost:3000/allUsers`)
       ]);
 
       const userReposData = await userReposResponse.json();
       const suggestedReposData = await suggestedReposResponse.json();
+      const usersData = await allUsersResponse.json();
 
       setRepositories(userReposData.repositories || []);
       setSuggestedRepositories(Array.isArray(suggestedReposData) ? suggestedReposData : []);
+      setAllUsers(Array.isArray(usersData.data) ? usersData.data : []);
     } catch (error) {
       console.error('Error fetching repositories:', error);
     }
@@ -86,6 +91,19 @@ const Dashboard = () => {
       searchByName();
     }
   }, [searchQuery, repositories]);
+
+  const filteredUsers = allUsers.filter((user) => {
+    if (String(user._id) === String(currentUserId)) {
+      return false;
+    }
+
+    if (!userSearchQuery.trim()) {
+      return true;
+    }
+
+    const query = userSearchQuery.toLowerCase();
+    return user.username?.toLowerCase().includes(query) || user.email?.toLowerCase().includes(query);
+  });
 
   return (
     <>
@@ -149,7 +167,7 @@ const Dashboard = () => {
 
           {/* MOBILE TABS */}
           <div className="lg:hidden flex gap-2 mb-4">
-            {['repos', 'explore', 'events'].map(tab => (
+            {['repos', 'explore', 'users'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -212,25 +230,45 @@ const Dashboard = () => {
             </div>
           )}
 
-          {/* EVENTS MOBILE */}
-          {activeTab === 'events' && (
+          {/* USERS MOBILE */}
+          {activeTab === 'users' && (
             <div className="space-y-3">
-              <div className="p-3 bg-[#161b22] rounded">Tech Conference</div>
-              <div className="p-3 bg-[#161b22] rounded">Developer Meetup</div>
+              <input
+                type="text"
+                value={userSearchQuery}
+                placeholder="Search users..."
+                onChange={(e) => setUserSearchQuery(e.target.value)}
+                className="w-full px-4 py-2 rounded-md bg-[#161b22] border border-[#30363d] focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              {filteredUsers.map((user) => (
+                  <Link to={`/profile/${user._id}`} key={user._id} className="block p-3 bg-[#161b22] rounded border border-[#30363d] hover:border-blue-500 transition">
+                    <p className="text-blue-400 font-medium">{user.username}</p>
+                    <p className="text-xs text-gray-400">{user.email}</p>
+                  </Link>
+                ))}
             </div>
           )}
         </main>
 
         {/* RIGHT PANEL */}
         <aside className="hidden xl:block xl:w-[22%] border-l border-[#30363d] p-5">
-          <h2 className="text-lg font-semibold mb-4">Upcoming Events</h2>
+          <h2 className="text-lg font-semibold mb-4">All Users</h2>
+          <input
+            type="text"
+            value={userSearchQuery}
+            placeholder="Search users..."
+            onChange={(e) => setUserSearchQuery(e.target.value)}
+            className="w-full px-3 py-2 mb-3 rounded-md bg-[#161b22] border border-[#30363d] focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+          />
           <div className="space-y-3">
-            <div className="flex items-center gap-2 p-3 bg-[#161b22] rounded-md">
-              <MdEvent /> Tech Conference
-            </div>
-            <div className="flex items-center gap-2 p-3 bg-[#161b22] rounded-md">
-              <MdEvent /> Developer Meetup
-            </div>
+            {filteredUsers
+              .slice(0, 8)
+              .map((user) => (
+                <Link to={`/profile/${user._id}`} key={user._id} className="block p-3 bg-[#161b22] rounded-md border border-[#30363d] hover:border-blue-500 transition">
+                  <p className="text-sm text-blue-400 font-medium truncate">{user.username}</p>
+                  <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                </Link>
+              ))}
           </div>
         </aside>
 

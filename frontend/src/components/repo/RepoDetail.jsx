@@ -274,8 +274,7 @@ const RepoDetail = () => {
             </div>
 
             <div className="text-right text-sm text-gray-400 space-y-2">
-              <p>{repository?.owner?.username || "Unknown owner"}</p>
-              <p>{repository?.visibility ? "Public" : "Private"}</p>
+              <p className="text-red-500">{repository?.visibility ? "Public" : "Private"}</p>
               {isOwner && (
                 <div className="flex flex-wrap justify-end gap-2">
                   <button onClick={handleToggleVisibility} className="px-3 py-1 rounded-md border border-[#30363d] hover:bg-[#1f2937] text-white">
