@@ -97,11 +97,75 @@ async function getUserProfile(req, res) {
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        res.status(200).json({ success: true, data: user });
+
+        const normalizedFollowing = Array.isArray(user.following) ? user.following : [];
+        const normalizedFollowers = Array.isArray(user.followers) ? user.followers : [];
+        const { followedUsers, ...safeUser } = user;
+
+        res.status(200).json({
+            success: true,
+            data: {
+                ...safeUser,
+                following: normalizedFollowing,
+                followers: normalizedFollowers
+            }
+        });
     } catch (err) {
         res.status(500).json({ message: 'Error fetching user profile', error: err.message });
     }
 }
+
+async function followUser(req, res) {
+    const targetUserId = req.params.id;
+    const { currentUserId } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(targetUserId) || !mongoose.Types.ObjectId.isValid(currentUserId)) {
+        return res.status(400).json({ message: 'Invalid user ID' });
+    }
+
+    if (String(targetUserId) === String(currentUserId)) {
+        return res.status(400).json({ message: 'You cannot follow yourself' });
+    }
+
+    try {
+        const [targetUser, currentUser] = await Promise.all([
+            User.findById(targetUserId),
+            User.findById(currentUserId)
+        ]);
+
+        if (!targetUser || !currentUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const currentFollowing = Array.isArray(currentUser.following) ? currentUser.following : [];
+
+        const alreadyFollowing = currentFollowing.some((id) => String(id) === String(targetUserId));
+        if (alreadyFollowing) {
+            return res.status(400).json({ message: 'Already following this user' });
+        }
+
+        await Promise.all([
+            User.findByIdAndUpdate(currentUserId, {
+                $addToSet: {
+                    following: targetUserId
+                }
+            }),
+            User.findByIdAndUpdate(targetUserId, {
+                $addToSet: {
+                    followers: currentUserId
+                }
+            })
+        ]);
+
+        return res.status(200).json({
+            success: true,
+            message: 'User followed successfully'
+        });
+    } catch (err) {
+        return res.status(500).json({ message: 'Error following user', error: err.message });
+    }
+}
+
 
 async function updateUserProfile(req, res) {
     const userId = req.params.id;
@@ -169,6 +233,7 @@ module.exports = {
     signUp,
     login,
     getUserProfile,
+    followUser,
     updateUserProfile,
     deleteUserProfile
 }

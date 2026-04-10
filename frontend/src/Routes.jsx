@@ -1,8 +1,9 @@
 import React, { useEffect } from "react";
-import { useNavigate, useRoutes } from 'react-router-dom';
+import { Navigate as Redirect, useLocation, useNavigate, useRoutes } from 'react-router-dom';
 
 // Page List
 import Dashboard from "./components/dashboard/Dashboard";
+import Users from "./components/user/Users";
 import Profile from "./components/user/Profile";
 import Login from "./components/auth/Login";
 import Signup from "./components/auth/Signup";
@@ -12,31 +13,43 @@ import { useAuth, AuthProvider } from "./authContext";
 
 const ProjectRoutes = () => {
     const { currentUser, setCurrentUser } = useAuth();
-    const Navigate = useNavigate();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const userId = localStorage.getItem("userId");
 
     useEffect(() => {
-        const userId = localStorage.getItem("userId");
-
-        if(userId) {
+        if (userId && currentUser !== userId) {
             setCurrentUser(userId);
         }
 
-        if(!userId && !["/auth", "/signup"].includes(window.location.pathname)) {
-            Navigate("/auth");
-        }; 
-
-        if(userId && ["/auth", "/signup"].includes(window.location.pathname)) {
-            Navigate("/dashboard");
+        if (!userId && !["/auth", "/signup"].includes(location.pathname)) {
+            navigate("/auth", { replace: true });
         }
-    }, [currentUser,setCurrentUser, Navigate]);
+
+        if (userId && ["/auth", "/signup"].includes(location.pathname)) {
+            navigate("/dashboard", { replace: true });
+        }
+    }, [currentUser, location.pathname, navigate, setCurrentUser, userId]);
 
     let element = useRoutes([
+        {
+            path: "/",
+            element: <Redirect to={userId ? "/dashboard" : "/auth"} replace />
+        },
         {
             path: "/dashboard",
             element: <Dashboard />
         },
         {
+            path: "/users",
+            element: <Users />
+        },
+        {
             path: "/profile",
+            element: <Profile />
+        },
+        {
+            path: "/profile/:id",
             element: <Profile />
         },
         {

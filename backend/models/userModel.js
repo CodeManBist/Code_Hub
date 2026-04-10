@@ -24,11 +24,18 @@ const UserSchema = new Schema({
             ref: 'Repository'
         }
     ],
-    followedUsers: [
+    following: [
         {
             default: [],
             type: Schema.Types.ObjectId,
-            ref: 'User' 
+            ref: 'User'
+        }
+    ],
+    followers: [
+        {
+            default: [],
+            type: Schema.Types.ObjectId,
+            ref: 'User'
         }
     ],
     starRepos: [
