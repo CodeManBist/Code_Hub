@@ -3,41 +3,30 @@ import Navbar from "../Navbar";
 import { useNavigate, useParams } from "react-router-dom";
 
 const Profile = () => {
-    const [user, setUser] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [user, setUser] = useState(null);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editUsername, setEditUsername] = useState("");
+  const [editEmail, setEditEmail] = useState("");
   const navigate = useNavigate();
   const { id } = useParams();
 
   const profileUserId = id || localStorage.getItem("userId");
 
-    useEffect(() => {
-        const fetchUserProfile = async () => {
-            try {
-        const response = await fetch(`http://localhost:3000/userProfile/${profileUserId}`);
-                const data = await response.json();
-
-                setUser(data.data);
-            } catch (error) {
-                console.error("Error fetching user profile:", error);
-            }
-        };
-
-        fetchUserProfile();
-
-    const fetchCurrentUser = async () => {
-      const userId = localStorage.getItem("userId");
-      if (!userId) return;
-
+  useEffect(() => {
+    const fetchUserProfile = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/userProfile/${userId}`);
+        const response = await fetch(`http://localhost:3000/userProfile/${profileUserId}`);
         const data = await response.json();
-        setCurrentUser(data.data);
+
+        setUser(data.data);
+        setEditUsername(data.data?.username || "");
+        setEditEmail(data.data?.email || "");
       } catch (error) {
-        console.error("Error fetching current user profile:", error);
+        console.error("Error fetching user profile:", error);
       }
     };
 
-    fetchCurrentUser();
+    fetchUserProfile();
   }, [profileUserId]);
 
   const handleFollow = async () => {
@@ -67,6 +56,64 @@ const Profile = () => {
       setUser(refreshedData.data);
     } catch (error) {
       console.error("Error following user:", error);
+      window.alert(error.message || "Failed to follow user.");
+    }
+  };
+
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch(`http://localhost:3000/updateProfile/${profileUserId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: editUsername,
+          email: editEmail
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to update profile");
+      }
+
+      setUser(data.data);
+      setIsEditingProfile(false);
+      window.alert("Profile updated successfully.");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      window.alert(error.message || "Failed to update profile.");
+    }
+  };
+
+  const handleDeleteProfile = async () => {
+    const shouldDelete = window.confirm("Delete your account permanently?");
+    if (!shouldDelete) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:3000/deleteProfile/${profileUserId}`, {
+        method: "DELETE"
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to delete account");
+      }
+
+      localStorage.removeItem("userId");
+      localStorage.removeItem("token");
+      window.alert("Account deleted successfully.");
+      navigate("/auth", { replace: true });
+    } catch (error) {
+      console.error("Error deleting profile:", error);
+      window.alert(error.message || "Failed to delete account.");
     }
   };
 
@@ -115,6 +162,48 @@ const Profile = () => {
                 <p className="text-sm text-gray-400 max-w-md leading-6">
                   {user?.email}
                 </p>
+
+                {isOwnProfile && (
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    <button
+                      onClick={() => setIsEditingProfile((prev) => !prev)}
+                      className="px-4 py-2 rounded-md border border-[#30363d] text-sm text-gray-300 hover:bg-[#1f2937] transition"
+                    >
+                      {isEditingProfile ? "Cancel" : "Edit Profile"}
+                    </button>
+                    <button
+                      onClick={handleDeleteProfile}
+                      className="px-4 py-2 rounded-md border border-red-700 text-sm text-red-300 hover:bg-red-950/40 transition"
+                    >
+                      Delete Account
+                    </button>
+                  </div>
+                )}
+
+                {isOwnProfile && isEditingProfile && (
+                  <form onSubmit={handleUpdateProfile} className="mt-5 space-y-3 max-w-md">
+                    <input
+                      type="text"
+                      value={editUsername}
+                      onChange={(e) => setEditUsername(e.target.value)}
+                      className="w-full px-4 py-2 rounded-md bg-[#0d1117] border border-[#30363d] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Username"
+                    />
+                    <input
+                      type="email"
+                      value={editEmail}
+                      onChange={(e) => setEditEmail(e.target.value)}
+                      className="w-full px-4 py-2 rounded-md bg-[#0d1117] border border-[#30363d] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Email"
+                    />
+                    <button
+                      type="submit"
+                      className="px-4 py-2 rounded-md bg-[#238636] hover:bg-[#2ea043] transition text-white text-sm font-medium"
+                    >
+                      Save Profile
+                    </button>
+                  </form>
+                )}
               </div>
             </div>
           </div>

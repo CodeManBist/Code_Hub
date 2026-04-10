@@ -64,10 +64,26 @@ const Dashboard = () => {
     if (searchQuery === '') {
       setSearchResults([]);
     } else {
-      const filteredRepo = repositories.filter(repo =>
-        repo.name.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      setSearchResults(filteredRepo);
+      const searchByName = async () => {
+        try {
+          const response = await fetch(`http://localhost:3000/repo/name/${encodeURIComponent(searchQuery.trim())}`);
+
+          if (response.ok) {
+            const repo = await response.json();
+            setSearchResults([repo]);
+            return;
+          }
+        } catch (error) {
+          console.error('Error searching repository by name:', error);
+        }
+
+        const filteredRepo = repositories.filter((repo) =>
+          repo.name.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+        setSearchResults(filteredRepo);
+      };
+
+      searchByName();
     }
   }, [searchQuery, repositories]);
 

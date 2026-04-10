@@ -15,6 +15,7 @@ const RepoDetail = () => {
   const [issueEditTitle, setIssueEditTitle] = useState("");
   const [issueEditDescription, setIssueEditDescription] = useState("");
   const [issueEditStatus, setIssueEditStatus] = useState("open");
+  const [selectedIssue, setSelectedIssue] = useState(null);
 
   const fetchRepository = async () => {
     try {
@@ -223,6 +224,22 @@ const RepoDetail = () => {
     }
   };
 
+  const handleOpenIssueDetails = async (issueId) => {
+    try {
+      const response = await fetch(`http://localhost:3000/issue/${issueId}`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch issue details");
+      }
+
+      setSelectedIssue(data.issue || null);
+    } catch (error) {
+      console.error("Error fetching issue details:", error);
+      window.alert(error.message || "Failed to fetch issue details.");
+    }
+  };
+
   return (
     <>
       <Navbar />
@@ -288,6 +305,23 @@ const RepoDetail = () => {
               <span className="text-sm text-gray-400">{issues.length} total</span>
             </div>
 
+            {selectedIssue && (
+              <div className="mb-5 p-4 rounded-lg border border-[#30363d] bg-[#0d1117]">
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="font-semibold text-white">{selectedIssue.title}</h3>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedIssue(null)}
+                    className="text-xs px-2 py-1 rounded-md border border-[#30363d] text-gray-300 hover:bg-[#1f2937]"
+                  >
+                    Close
+                  </button>
+                </div>
+                <p className="text-sm text-gray-400 mt-2">{selectedIssue.description}</p>
+                <p className="text-xs text-gray-500 mt-2">Status: {selectedIssue.status}</p>
+              </div>
+            )}
+
             <form onSubmit={handleCreateIssue} className="space-y-3 mb-6">
               <input
                 type="text"
@@ -348,7 +382,13 @@ const RepoDetail = () => {
                   ) : (
                     <>
                       <div className="flex items-center justify-between gap-3">
-                        <h3 className="font-semibold text-white">{issue.title}</h3>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenIssueDetails(issue._id)}
+                          className="font-semibold text-white hover:underline text-left"
+                        >
+                          {issue.title}
+                        </button>
                         <span className={`text-xs px-2 py-1 rounded-full ${issue.status === "open" ? "bg-green-900 text-green-300" : "bg-gray-800 text-gray-300"}`}>
                           {issue.status}
                         </span>
