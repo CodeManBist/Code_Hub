@@ -5,6 +5,7 @@ const dotenv = require("dotenv");
 const User = require("../models/userModel");
 const Repository = require("../models/repoModel");
 const Issue = require("../models/issueModel");
+const { revokeToken } = require("../middleware/authMiddleware");
 
 dotenv.config();
 
@@ -119,6 +120,15 @@ const login = async (req, res) => {
             message: 'Error logging in user',
             error: err.message
         });
+    }
+};
+
+const logout = async (req, res) => {
+    try {
+        revokeToken(req.token);
+        res.status(200).json({ success: true, message: "Logout successful" });
+    } catch (err) {
+        res.status(500).json({ message: 'Error during logout', error: err.message });
     }
 };
 
@@ -268,6 +278,7 @@ module.exports = {
     getAllUsers,
     signUp,
     login,
+    logout,
     getUserProfile,
     followUser,
     updateUserProfile,

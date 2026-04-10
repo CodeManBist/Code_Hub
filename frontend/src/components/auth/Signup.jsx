@@ -28,6 +28,10 @@ function Signup() {
 
       const data = await response.json();
 
+      if (!response.ok) {
+        throw new Error(data.message || "Signup failed");
+      }
+
       localStorage.setItem("token", data.token);
       localStorage.setItem("userId", data.userId);
 
@@ -37,7 +41,7 @@ function Signup() {
 
     } catch (error) {
       console.error("Signup failed:", error);
-      alert("Signup failed");
+      alert(error.message || "Signup failed");
     } finally {
       setLoading(false);
     }

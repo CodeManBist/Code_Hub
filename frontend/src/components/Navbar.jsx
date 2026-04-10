@@ -1,9 +1,35 @@
 import React from 'react'
 import { FaGithub } from "react-icons/fa";
 import { VscAccount } from "react-icons/vsc";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../authContext';
 
 const Navbar = () => {
+  const navigate = useNavigate();
+  const { setCurrentUser } = useAuth();
+
+  const handleLogout = async () => {
+    const token = localStorage.getItem("token");
+
+    try {
+      if (token) {
+        await fetch("http://localhost:3000/logout", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Logout request failed:", error);
+    } finally {
+      localStorage.removeItem("token");
+      localStorage.removeItem("userId");
+      setCurrentUser(null);
+      navigate("/auth", { replace: true });
+    }
+  };
+
   return (
     <nav className="w-full px-6 py-3 flex items-center justify-between bg-[#161b22] border-b border-[#30363d] sticky top-0 z-50">
 
@@ -23,6 +49,13 @@ const Navbar = () => {
         <Link to="/profile">
           <VscAccount className="cursor-pointer hover:text-white transition" />
         </Link>
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="text-sm font-medium text-gray-300 hover:text-white transition"
+        >
+          Logout
+        </button>
       </div>
 
     </nav>

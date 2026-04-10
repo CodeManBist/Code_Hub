@@ -15,8 +15,14 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchUserProfile = async () => {
+      const token = localStorage.getItem("token");
+
       try {
-        const response = await fetch(`http://localhost:3000/userProfile/${profileUserId}`);
+        const response = await fetch(`http://localhost:3000/userProfile/${profileUserId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         const data = await response.json();
 
         setUser(data.data);
@@ -32,6 +38,7 @@ const Profile = () => {
 
   const handleFollow = async () => {
     const currentUserId = localStorage.getItem("userId");
+    const token = localStorage.getItem("token");
 
     if (!currentUserId || !user?._id || String(currentUserId) === String(user._id)) {
       return;
@@ -41,7 +48,8 @@ const Profile = () => {
       const response = await fetch(`http://localhost:3000/follow/${user._id}`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ currentUserId })
       });
@@ -52,7 +60,11 @@ const Profile = () => {
         throw new Error(result.message || "Failed to follow user");
       }
 
-      const refreshedProfile = await fetch(`http://localhost:3000/userProfile/${profileUserId}`);
+      const refreshedProfile = await fetch(`http://localhost:3000/userProfile/${profileUserId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const refreshedData = await refreshedProfile.json();
       setUser(refreshedData.data);
     } catch (error) {
@@ -63,12 +75,14 @@ const Profile = () => {
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem("token");
 
     try {
       const response = await fetch(`http://localhost:3000/updateProfile/${profileUserId}`, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           username: editUsername,
@@ -92,6 +106,7 @@ const Profile = () => {
   };
 
   const handleDeleteProfile = async () => {
+    const token = localStorage.getItem("token");
     const shouldDelete = window.confirm("Delete your account permanently?");
     if (!shouldDelete) {
       return;
@@ -99,7 +114,10 @@ const Profile = () => {
 
     try {
       const response = await fetch(`http://localhost:3000/deleteProfile/${profileUserId}`, {
-        method: "DELETE"
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       const data = await response.json();

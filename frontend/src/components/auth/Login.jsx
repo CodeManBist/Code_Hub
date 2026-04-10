@@ -29,6 +29,10 @@ function Login() {
 
       const data = await response.json();
 
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
+      }
+
       localStorage.setItem("token", data.token);
       localStorage.setItem("userId", data.userId);
 
@@ -38,7 +42,7 @@ function Login() {
 
     } catch (error) {
       console.error("Login failed:", error);
-      alert("Login failed");
+      alert(error.message || "Login failed");
     } finally {
       setLoading(false);
     }

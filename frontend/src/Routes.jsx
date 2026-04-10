@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Navigate as Redirect, useLocation, useNavigate, useRoutes } from 'react-router-dom';
+import { Navigate as Redirect, useRoutes } from 'react-router-dom';
 
 // Page List
 import Dashboard from "./components/dashboard/Dashboard";
@@ -14,56 +14,53 @@ import { useAuth } from "./authContext";
 
 const ProjectRoutes = () => {
     const { currentUser, setCurrentUser } = useAuth();
-    const navigate = useNavigate();
-    const location = useLocation();
     const userId = localStorage.getItem("userId");
+    const token = localStorage.getItem("token");
+    const isAuthenticated = Boolean(userId && token);
 
     useEffect(() => {
-        if (userId && currentUser !== userId) {
+        if (isAuthenticated && currentUser !== userId) {
             setCurrentUser(userId);
+            return;
         }
 
-        if (!userId && !["/auth", "/signup"].includes(location.pathname)) {
-            navigate("/auth", { replace: true });
+        if (!isAuthenticated && currentUser !== null) {
+            setCurrentUser(null);
         }
-
-        if (userId && ["/auth", "/signup"].includes(location.pathname)) {
-            navigate("/dashboard", { replace: true });
-        }
-    }, [currentUser, location.pathname, navigate, setCurrentUser, userId]);
+    }, [currentUser, isAuthenticated, setCurrentUser, userId]);
 
     let element = useRoutes([
         {
             path: "/",
-            element: <Redirect to={userId ? "/dashboard" : "/auth"} replace />
+            element: <Redirect to={isAuthenticated ? "/dashboard" : "/auth"} replace />
         },
         {
             path: "/dashboard",
-            element: <Dashboard />
+            element: isAuthenticated ? <Dashboard /> : <Redirect to="/auth" replace />
         },
         {
             path: "/repo/:id",
-            element: <RepoDetail />
+            element: isAuthenticated ? <RepoDetail /> : <Redirect to="/auth" replace />
         },
         {
             path: "/repo/create",
-            element: <CreateRepository />
+            element: isAuthenticated ? <CreateRepository /> : <Redirect to="/auth" replace />
         },
         {
             path: "/profile",
-            element: <Profile />
+            element: isAuthenticated ? <Profile /> : <Redirect to="/auth" replace />
         },
         {
             path: "/profile/:id",
-            element: <Profile />
+            element: isAuthenticated ? <Profile /> : <Redirect to="/auth" replace />
         },
         {
             path: "/auth",
-            element: <Login />
+            element: isAuthenticated ? <Redirect to="/dashboard" replace /> : <Login />
         },
         {
             path: "/signup",
-            element: <Signup />
+            element: isAuthenticated ? <Redirect to="/dashboard" replace /> : <Signup />
         },
     ]);
 

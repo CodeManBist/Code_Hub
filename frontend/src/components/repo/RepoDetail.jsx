@@ -34,8 +34,13 @@ const RepoDetail = () => {
   const [selectedIssue, setSelectedIssue] = useState(null);
 
   const fetchRepository = async () => {
+    const token = localStorage.getItem("token");
     try {
-      const response = await fetch(`http://localhost:3000/repo/${id}`);
+      const response = await fetch(`http://localhost:3000/repo/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const data = await response.json();
       setRepository(data);
       setRepoDescription(data.description || "");
@@ -46,8 +51,13 @@ const RepoDetail = () => {
   };
 
   const fetchIssues = async () => {
+    const token = localStorage.getItem("token");
     try {
-      const response = await fetch(`http://localhost:3000/issue/all/${id}`);
+      const response = await fetch(`http://localhost:3000/issue/all/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const data = await response.json();
       setIssues(data.issues || []);
     } catch (error) {
@@ -154,7 +164,8 @@ const RepoDetail = () => {
       const response = await fetch(`http://localhost:3000/issue/create/${id}`, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({
           title: issueTitle,
@@ -194,7 +205,8 @@ const RepoDetail = () => {
       const response = await fetch(`http://localhost:3000/issue/update/${issueId}`, {
         method: "PATCH",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({
           title: issueEditTitle,
@@ -226,7 +238,10 @@ const RepoDetail = () => {
 
     try {
       const response = await fetch(`http://localhost:3000/issue/delete/${issueId}`, {
-        method: "DELETE"
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
 
       const data = await readApiResponse(response);
@@ -245,7 +260,11 @@ const RepoDetail = () => {
 
   const handleOpenIssueDetails = async (issueId) => {
     try {
-      const response = await fetch(`http://localhost:3000/issue/${issueId}`);
+      const response = await fetch(`http://localhost:3000/issue/${issueId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       const data = await readApiResponse(response);
 
       if (!response.ok) {

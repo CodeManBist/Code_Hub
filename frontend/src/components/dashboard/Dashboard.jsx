@@ -18,12 +18,17 @@ const Dashboard = () => {
 
   const refreshRepositories = async () => {
     const userId = localStorage.getItem("userId");
+    const token = localStorage.getItem("token");
 
     try {
       const [userReposResponse, suggestedReposResponse, allUsersResponse] = await Promise.all([
         fetch(`http://localhost:3000/repo/user/${userId}`),
         fetch(`http://localhost:3000/repo/all`),
-        fetch(`http://localhost:3000/allUsers`)
+        fetch(`http://localhost:3000/allUsers`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
       ]);
 
       const userReposData = await userReposResponse.json();
@@ -50,7 +55,8 @@ const Dashboard = () => {
       const response = await fetch(`http://localhost:3000/repo/${repo._id}/star`, {
         method: isStarred ? 'DELETE' : 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({ userId })
       });
