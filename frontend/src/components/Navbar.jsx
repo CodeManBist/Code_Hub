@@ -22,6 +22,9 @@ const Navbar = () => {
         <Link to="/users" className="text-sm font-medium hover:text-white transition">
           Users
         </Link>
+        <Link to="/repo/create" className="text-sm font-medium hover:text-white transition">
+          New Repo
+        </Link>
         <IoGitPullRequestOutline className="cursor-pointer hover:text-white transition" />
         <GoIssueOpened className="cursor-pointer hover:text-white transition" />
         <Link to="/profile">

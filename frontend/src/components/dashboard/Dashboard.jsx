@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import Navbar from '../Navbar';
+import { Link } from 'react-router-dom';
 import { GoRepo } from "react-icons/go";
 import { FaStar } from "react-icons/fa";
 import { GoDotFill } from "react-icons/go";
@@ -153,9 +154,9 @@ const Dashboard = () => {
                   <div className="flex justify-between items-center mb-2">
                     <div className="flex items-center gap-2">
                       <GoRepo className="text-gray-400" />
-                      <h3 className="text-lg font-semibold text-blue-400 hover:underline cursor-pointer">
+                      <Link to={`/repo/${repo._id}`} className="text-lg font-semibold text-blue-400 hover:underline cursor-pointer">
                         {repo.name}
-                      </h3>
+                      </Link>
                     </div>
 
                     <button
