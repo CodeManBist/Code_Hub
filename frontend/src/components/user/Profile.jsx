@@ -219,6 +219,7 @@ const Profile = () => {
 
             <div className="overflow-x-auto">
               <HeatMap
+                className="profile-heatmap"
                 value={Array.isArray(user?.contributionHeatmap) ? user.contributionHeatmap : []}
                 startDate={new Date(new Date().setFullYear(new Date().getFullYear() - 1))}
                 endDate={new Date()}
