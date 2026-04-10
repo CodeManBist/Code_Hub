@@ -4,8 +4,8 @@ const User = require('../models/userModel');
 const Issue = require('../models/issueModel');
 
 async function createIssue(req, res) {
-    const { title, description } = req.body;
-    const { id } = req.params;
+    const { title, description, status } = req.body;
+    const id = req.params.id || req.query.id || req.body.repository || req.body.repositoryId;
 
     try {
         if(!title || !description) {
@@ -20,6 +20,7 @@ async function createIssue(req, res) {
         const issue = new Issue({
             title,
             description,
+            status,
             repository: id
         });
         await issue.save();
@@ -35,7 +36,11 @@ async function createIssue(req, res) {
 };
 
 async function getAllIssues (req, res) {
-    const { id } = req.params;
+    const id = req.params.id || req.query.id || req.query.repository || req.body?.repository;
+
+    if (!id) {
+        return res.status(400).json({ error: "Repository ID is required" });
+    }
 
     try {
         const issues = await Issue.find({ repository: id });
@@ -81,9 +86,17 @@ async function updateIssueById (req, res) {
             return res.status(404).json({ error: "Issue not found" });
         }
 
-        issue.title = title;
-        issue.description = description;
-        issue.status = status;
+        if (typeof title === "string" && title.trim()) {
+            issue.title = title;
+        }
+
+        if (typeof description === "string" && description.trim()) {
+            issue.description = description;
+        }
+
+        if (typeof status === "string") {
+            issue.status = status;
+        }
         await issue.save();
 
         res.json({ message: "Issue updated successfully", issue });

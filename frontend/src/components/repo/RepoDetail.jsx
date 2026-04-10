@@ -2,6 +2,21 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import Navbar from "../Navbar";
 
+const ISSUE_STATUS_OPTIONS = ["open", "closed"];
+
+async function readApiResponse(response) {
+  const contentType = response.headers.get("content-type") || "";
+
+  if (contentType.includes("application/json")) {
+    return response.json();
+  }
+
+  const rawText = await response.text();
+  return {
+    error: rawText?.slice(0, 200) || `Unexpected response format (${response.status})`
+  };
+}
+
 const RepoDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -9,6 +24,7 @@ const RepoDetail = () => {
   const [issues, setIssues] = useState([]);
   const [issueTitle, setIssueTitle] = useState("");
   const [issueDescription, setIssueDescription] = useState("");
+  const [issueStatus, setIssueStatus] = useState("open");
   const [repoDescription, setRepoDescription] = useState("");
   const [repoContent, setRepoContent] = useState("");
   const [editingIssueId, setEditingIssueId] = useState(null);
@@ -142,11 +158,12 @@ const RepoDetail = () => {
         },
         body: JSON.stringify({
           title: issueTitle,
-          description: issueDescription
+          description: issueDescription,
+          status: issueStatus
         })
       });
 
-      const data = await response.json();
+      const data = await readApiResponse(response);
 
       if (!response.ok) {
         throw new Error(data.error || "Failed to create issue");
@@ -154,6 +171,7 @@ const RepoDetail = () => {
 
       setIssueTitle("");
       setIssueDescription("");
+      setIssueStatus("open");
       fetchIssues();
       fetchRepository();
       window.alert("Issue created successfully.");
@@ -184,7 +202,7 @@ const RepoDetail = () => {
         })
       });
 
-      const data = await response.json();
+      const data = await readApiResponse(response);
 
       if (!response.ok) {
         throw new Error(data.error || "Failed to update issue");
@@ -210,7 +228,7 @@ const RepoDetail = () => {
         method: "DELETE"
       });
 
-      const data = await response.json();
+      const data = await readApiResponse(response);
 
       if (!response.ok) {
         throw new Error(data.error || "Failed to delete issue");
@@ -227,7 +245,7 @@ const RepoDetail = () => {
   const handleOpenIssueDetails = async (issueId) => {
     try {
       const response = await fetch(`http://localhost:3000/issue/${issueId}`);
-      const data = await response.json();
+      const data = await readApiResponse(response);
 
       if (!response.ok) {
         throw new Error(data.error || "Failed to fetch issue details");
@@ -337,6 +355,17 @@ const RepoDetail = () => {
                 rows="4"
                 className="w-full px-4 py-2 rounded-md bg-[#0d1117] border border-[#30363d] focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               />
+              <select
+                value={issueStatus}
+                onChange={(e) => setIssueStatus(e.target.value)}
+                className="w-full px-4 py-2 rounded-md bg-[#0d1117] border border-[#30363d] focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {ISSUE_STATUS_OPTIONS.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
               <button
                 type="submit"
                 className="px-4 py-2 rounded-md bg-[#238636] hover:bg-[#2ea043] transition text-white text-sm font-medium"
@@ -367,8 +396,11 @@ const RepoDetail = () => {
                         onChange={(e) => setIssueEditStatus(e.target.value)}
                         className="w-full px-4 py-2 rounded-md bg-[#161b22] border border-[#30363d] focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
-                        <option value="open">open</option>
-                        <option value="closed">closed</option>
+                        {ISSUE_STATUS_OPTIONS.map((status) => (
+                          <option key={status} value={status}>
+                            {status}
+                          </option>
+                        ))}
                       </select>
                       <div className="flex gap-2">
                         <button onClick={() => handleUpdateIssue(issue._id)} type="button" className="px-3 py-2 rounded-md bg-[#238636] hover:bg-[#2ea043] transition text-white text-sm font-medium">
