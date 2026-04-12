@@ -25,7 +25,33 @@ yargs(hideBin(process.argv))
 
 .command("start", "Starts a new server", {}, startServer)
 
-.command("init", "Initialize a new repository", {}, initRepo)
+.command(
+  "init",
+  "Initialize a new repository",
+  (yargs) => {
+    yargs.option("stateBackend", {
+      describe: "Where init/add/commit state is stored",
+      choices: ["local", "s3"],
+      default: "local"
+    });
+    yargs.option("storageMode", {
+      describe: "Storage mode for remote objects",
+      choices: ["legacy", "namespaced"],
+      default: "legacy"
+    });
+    yargs.option("userId", {
+      describe: "User identifier for namespaced storage",
+      type: "string"
+    });
+    yargs.option("repoId", {
+      describe: "Repository identifier for namespaced storage",
+      type: "string"
+    });
+  },
+  (argv) => {
+    initRepo(argv);
+  }
+)
 
 .command("status", "Check repository status", {}, statusRepo)
 
@@ -39,7 +65,7 @@ yargs(hideBin(process.argv))
     });
   },
   (argv) => {
-    addRepo(argv.file);
+    addRepo(argv.file, argv);
   }
 )
 
@@ -53,13 +79,54 @@ yargs(hideBin(process.argv))
     });
   },
   (argv) => {
-    commitRepo(argv.message);
+    commitRepo(argv.message, argv);
   }
 )
 
-.command("push", "Push commits to remote", {}, pushRepo)
 
-.command("pull", "Pull latest changes", {}, pullRepo)
+.command(
+  "push",
+  "Push commits to remote",
+  (yargs) => {
+    yargs.option("storageMode", {
+      describe: "Storage mode for remote objects",
+      choices: ["legacy", "namespaced"]
+    });
+    yargs.option("userId", {
+      describe: "User identifier for namespaced storage",
+      type: "string"
+    });
+    yargs.option("repoId", {
+      describe: "Repository identifier for namespaced storage",
+      type: "string"
+    });
+  },
+  (argv) => {
+    pushRepo(argv);
+  }
+)
+
+.command(
+  "pull",
+  "Pull latest changes",
+  (yargs) => {
+    yargs.option("storageMode", {
+      describe: "Storage mode for remote objects",
+      choices: ["legacy", "namespaced"]
+    });
+    yargs.option("userId", {
+      describe: "User identifier for namespaced storage",
+      type: "string"
+    });
+    yargs.option("repoId", {
+      describe: "Repository identifier for namespaced storage",
+      type: "string"
+    });
+  },
+  (argv) => {
+    pullRepo(argv);
+  }
+)
 
 .command(
   "revert <commitId>", 
@@ -71,7 +138,7 @@ yargs(hideBin(process.argv))
     });
   }, 
   (argv) => {
-    revertRepo(argv.commitId);
+    revertRepo(argv.commitId, argv);
   }
 )
 

@@ -1,13 +1,23 @@
 const fs = require("fs").promises;
 const path = require("path");
-const { s3, S3_BUCKET } = require("../config/aws-config");
 const { PutObjectCommand } = require("@aws-sdk/client-s3");
+const { getRepoPath, readRepoConfig, resolveGitOptions, resolvePrefixes } = require("../utils/gitConfig");
 
-async function pushRepo() {
-  const repoPath = path.resolve(process.cwd(), ".myGit");
+async function pushRepo(argv = {}) {
+  const repoPath = getRepoPath();
   const commitsPath = path.join(repoPath, "commits");
 
   try {
+    const config = await readRepoConfig(repoPath);
+    const options = resolveGitOptions(config, argv);
+    const { commitsPrefix } = resolvePrefixes(options);
+
+    if (options.stateBackend === "s3") {
+      console.log(`State backend is s3. Commits are already stored under ${commitsPrefix}`);
+      return;
+    }
+
+    const { s3, S3_BUCKET } = require("../config/aws-config");
     const commitDirs = await fs.readdir(commitsPath);
 
     for (const commitDir of commitDirs) {
@@ -20,7 +30,7 @@ async function pushRepo() {
         // Upload file to S3 using AWS SDK v3
         const params = {
           Bucket: S3_BUCKET,
-          Key: `commits/${commitDir}/${file}`,
+          Key: `${commitsPrefix}${commitDir}/${file}`,
           Body: fileContent
         };
         const command = new PutObjectCommand(params);
@@ -28,7 +38,7 @@ async function pushRepo() {
       }
     }
 
-    console.log("All commits pushed to S3.");
+    console.log(`All commits pushed to S3 under ${commitsPrefix}`);
 
   } catch (err) {
     console.error("Error pushing to s3 : ", err);

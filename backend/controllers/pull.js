@@ -1,17 +1,22 @@
 const fs = require("fs").promises;
 const path = require("path");
-const { s3, S3_BUCKET } = require("../config/aws-config");
 const { ListObjectsV2Command, GetObjectCommand } = require("@aws-sdk/client-s3");
+const { getRepoPath, readRepoConfig, resolveGitOptions, resolvePrefixes } = require("../utils/gitConfig");
 
-async function pullRepo() {
-  const repoPath = path.resolve(process.cwd(), ".myGit");
+async function pullRepo(argv = {}) {
+  const repoPath = getRepoPath();
   const commitsPath = path.join(repoPath, "commits");
 
   try {
-    // List all objects under commits/
+    const { s3, S3_BUCKET } = require("../config/aws-config");
+    const config = await readRepoConfig(repoPath);
+    const options = resolveGitOptions(config, argv);
+    const { commitsPrefix } = resolvePrefixes(options);
+
+    // List all objects under the selected commits prefix
     const listParams = {
       Bucket: S3_BUCKET,
-      Prefix: "commits/"
+      Prefix: commitsPrefix
     };
     const listCommand = new ListObjectsV2Command(listParams);
     const listResult = await s3.send(listCommand);
@@ -23,8 +28,8 @@ async function pullRepo() {
 
     for (const obj of listResult.Contents) {
       const key = obj.Key;
-      // Remove 'commits/' prefix for local path
-      const relativePath = key.replace(/^commits\//, "");
+      // Remove remote prefix for local path
+      const relativePath = key.replace(commitsPrefix, "");
       const localFilePath = path.join(commitsPath, relativePath);
 
       // Ensure directory exists
@@ -50,7 +55,7 @@ async function pullRepo() {
       console.log(`Downloaded: ${localFilePath}`);
     }
 
-    console.log("All commits pulled from S3.");
+    console.log(`All commits pulled from S3 under ${commitsPrefix}`);
   } catch (err) {
     console.error("Error pulling from S3:", err);
   }
