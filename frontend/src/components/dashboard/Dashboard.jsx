@@ -128,9 +128,9 @@ const Dashboard = () => {
               <button onClick={() => setIsSidebarOpen(false)} className="mb-4">Close</button>
               <h2 className="text-lg font-semibold mb-4">Explore</h2>
               {suggestedRepositories.map(repo => (
-                <div key={repo._id} className="p-2 hover:bg-[#1f2937] rounded">
+                <Link to={`/repo/${repo._id}`} key={repo._id} className="block p-2 hover:bg-[#1f2937] rounded">
                   {repo.name}
-                </div>
+                </Link>
               ))}
             </div>
           </div>
@@ -140,13 +140,13 @@ const Dashboard = () => {
         <aside className="hidden lg:block lg:w-[18%] h-screen border-r border-[#30363d] bg-[#161b22] p-4 sticky top-0">
           <h2 className="text-lg font-semibold mb-4">Explore</h2>
           {suggestedRepositories.map(repo => (
-            <div key={repo._id} className="p-3 rounded-md hover:bg-[#1f2937] transition cursor-pointer">
+            <Link to={`/repo/${repo._id}`} key={repo._id} className="block p-3 rounded-md hover:bg-[#1f2937] transition cursor-pointer">
               <div className="flex items-center gap-2">
                 <GoRepo className="text-gray-400" />
                 <p className="text-sm font-medium text-blue-400">{repo.name}</p>
               </div>
               <p className="text-xs text-gray-400 line-clamp-2">{repo.description}</p>
-            </div>
+            </Link>
           ))}
         </aside>
 
@@ -233,9 +233,9 @@ const Dashboard = () => {
           {activeTab === 'explore' && (
             <div className="space-y-3">
               {suggestedRepositories.map(repo => (
-                <div key={repo._id} className="p-3 bg-[#161b22] rounded">
+                <Link to={`/repo/${repo._id}`} key={repo._id} className="block p-3 bg-[#161b22] rounded hover:bg-[#1f2937] transition">
                   {repo.name}
-                </div>
+                </Link>
               ))}
             </div>
           )}

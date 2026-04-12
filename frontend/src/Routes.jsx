@@ -5,6 +5,7 @@ import { Navigate as Redirect, useRoutes } from 'react-router-dom';
 import Dashboard from "./components/dashboard/Dashboard";
 import Profile from "./components/user/Profile";
 import RepoDetail from "./components/repo/RepoDetail";
+import RepoIssues from "./components/repo/RepoIssues";
 import CreateRepository from "./components/repo/CreateRepository";
 import Login from "./components/auth/Login";
 import Signup from "./components/auth/Signup";
@@ -41,6 +42,10 @@ const ProjectRoutes = () => {
         {
             path: "/repo/:id",
             element: isAuthenticated ? <RepoDetail /> : <Redirect to="/auth" replace />
+        },
+        {
+            path: "/repo/:id/issues",
+            element: isAuthenticated ? <RepoIssues /> : <Redirect to="/auth" replace />
         },
         {
             path: "/repo/create",
