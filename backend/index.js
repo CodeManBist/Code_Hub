@@ -163,7 +163,16 @@ function startServer() {
       console.error("Error connecting to MongoDB:", err);
     })
 
-  app.use(cors({ origin: "*" }));
+  const cors = require("cors");
+
+  app.use(cors({
+    origin: [
+      "http://localhost:5173", // local frontend
+      "https://code-hub-taupe.vercel.app" // deployed frontend
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+  }));
 
   app.use("/", mainRouter);
   
