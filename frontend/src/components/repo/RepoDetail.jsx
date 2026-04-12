@@ -36,7 +36,7 @@ const RepoDetail = () => {
   const fetchRepository = async () => {
     const token = localStorage.getItem("token");
     try {
-      const response = await fetch(`http://localhost:3000/repo/${id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/repo/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -53,7 +53,7 @@ const RepoDetail = () => {
   const fetchIssues = async () => {
     const token = localStorage.getItem("token");
     try {
-      const response = await fetch(`http://localhost:3000/issue/all/${id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/issue/all/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -79,7 +79,7 @@ const RepoDetail = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch(`http://localhost:3000/repo/update/${id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/repo/update/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json"
@@ -109,7 +109,7 @@ const RepoDetail = () => {
 
   const handleToggleVisibility = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/repo/toggle/${id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/repo/toggle/${id}`, {
         method: "PATCH"
       });
 
@@ -134,7 +134,7 @@ const RepoDetail = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:3000/repo/delete/${id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/repo/delete/${id}`, {
         method: "DELETE"
       });
 
@@ -161,7 +161,7 @@ const RepoDetail = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:3000/issue/create/${id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/issue/create/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -202,7 +202,7 @@ const RepoDetail = () => {
 
   const handleUpdateIssue = async (issueId) => {
     try {
-      const response = await fetch(`http://localhost:3000/issue/update/${issueId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/issue/update/${issueId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -237,7 +237,7 @@ const RepoDetail = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:3000/issue/delete/${issueId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/issue/delete/${issueId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -260,7 +260,7 @@ const RepoDetail = () => {
 
   const handleOpenIssueDetails = async (issueId) => {
     try {
-      const response = await fetch(`http://localhost:3000/issue/${issueId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/issue/${issueId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },

@@ -18,7 +18,7 @@ const Profile = () => {
       const token = localStorage.getItem("token");
 
       try {
-        const response = await fetch(`http://localhost:3000/userProfile/${profileUserId}`, {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/userProfile/${profileUserId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -45,7 +45,7 @@ const Profile = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:3000/follow/${user._id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/follow/${user._id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -60,7 +60,7 @@ const Profile = () => {
         throw new Error(result.message || "Failed to follow user");
       }
 
-      const refreshedProfile = await fetch(`http://localhost:3000/userProfile/${profileUserId}`, {
+      const refreshedProfile = await fetch(`${import.meta.env.VITE_API_BASE_URL}/userProfile/${profileUserId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -78,7 +78,7 @@ const Profile = () => {
     const token = localStorage.getItem("token");
 
     try {
-      const response = await fetch(`http://localhost:3000/updateProfile/${profileUserId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/updateProfile/${profileUserId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -113,7 +113,7 @@ const Profile = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:3000/deleteProfile/${profileUserId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/deleteProfile/${profileUserId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

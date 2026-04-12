@@ -13,7 +13,7 @@ const Navbar = () => {
 
     try {
       if (token) {
-        await fetch("http://localhost:3000/logout", {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/logout`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,

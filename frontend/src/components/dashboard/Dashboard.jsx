@@ -22,9 +22,9 @@ const Dashboard = () => {
 
     try {
       const [userReposResponse, suggestedReposResponse, allUsersResponse] = await Promise.all([
-        fetch(`http://localhost:3000/repo/user/${userId}`),
-        fetch(`http://localhost:3000/repo/all`),
-        fetch(`http://localhost:3000/allUsers`, {
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/repo/user/${userId}`),
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/repo/all`),
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/allUsers`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -52,7 +52,7 @@ const Dashboard = () => {
     const isStarred = Array.isArray(repo.stargazers) && repo.stargazers.some((starUserId) => String(starUserId) === String(userId));
 
     try {
-      const response = await fetch(`http://localhost:3000/repo/${repo._id}/star`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/repo/${repo._id}/star`, {
         method: isStarred ? 'DELETE' : 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -77,7 +77,7 @@ const Dashboard = () => {
     } else {
       const searchByName = async () => {
         try {
-          const response = await fetch(`http://localhost:3000/repo/name/${encodeURIComponent(searchQuery.trim())}`);
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/repo/name/${encodeURIComponent(searchQuery.trim())}`);
 
           if (response.ok) {
             const repo = await response.json();
