@@ -22,7 +22,11 @@ const Dashboard = () => {
 
     try {
       const [userReposResponse, suggestedReposResponse, allUsersResponse] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_BASE_URL}/repo/user/${userId}`),
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/repo/user/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }),
         fetch(`${import.meta.env.VITE_API_BASE_URL}/repo/all`),
         fetch(`${import.meta.env.VITE_API_BASE_URL}/allUsers`, {
           headers: {
