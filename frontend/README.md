@@ -1,16 +1,53 @@
-# React + Vite
+# Frontend (React + Vite)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This frontend provides the UI for the Github-Clone platform: authentication, dashboard, repository views, profile pages, and issue interactions.
 
-Currently, two official plugins are available:
+## Scripts
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm run dev
+npm run build
+npm run preview
+npm run lint
+```
 
-## React Compiler
+## Local Development
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. Install dependencies:
 
-## Expanding the ESLint configuration
+```bash
+npm install
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+2. Start the dev server:
+
+```bash
+npm run dev
+```
+
+3. Open the Vite URL shown in terminal (usually `http://localhost:5173`).
+
+## Backend API Configuration
+
+Current code uses hardcoded API URLs like `http://localhost:3000` in components.
+
+For deployment, migrate to a single environment variable (recommended):
+
+- Create `.env` in `frontend/`:
+
+```env
+VITE_API_BASE_URL=https://your-backend-domain
+```
+
+- Build all fetch URLs from `import.meta.env.VITE_API_BASE_URL`.
+
+## Suggested UI States for Git-like Actions
+
+If you expose custom git-like operations in UI, show these states:
+
+- Init status: repository initialized or not
+- Add status: staged files list and count
+- Commit status: last commit message/id/time
+- Push status: success/failure with uploaded commit count
+
+These states are enough for an MVP and help users trust what happened after each action.
