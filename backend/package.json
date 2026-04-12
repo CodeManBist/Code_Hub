@@ -4,7 +4,7 @@
   "description": "Git Clone",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node index.js start",
     "smoke:test": "node tests/smoke.js"
   },
   "keywords": [],
