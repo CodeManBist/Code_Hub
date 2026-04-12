@@ -8,8 +8,8 @@ mainRouter.use(issueRouter);
 mainRouter.use(userRouter);  
 mainRouter.use(repoRouter);
 
-mainRouter.get("/", (req, res) => {
-    res.send("Welcome to the Git API");
+mainRouter.get("/health", (req, res) => {
+    res.status(200).json({ message: "Server is healthy" });
 });
 
 module.exports = mainRouter;
