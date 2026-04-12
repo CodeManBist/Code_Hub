@@ -2,6 +2,10 @@
 
 A full-stack GitHub-like application with user profiles, repositories, issues, stars, and a custom git-like CLI flow (`init`, `add`, `commit`, `push`, `pull`, `revert`) implemented in Node.js.
 
+## Live Demo
+
+- Frontend (Vercel): https://code-hub-taupe.vercel.app/
+
 ## Key Achievements
 
 - Built a full-stack GitHub-style platform with auth, repositories, issues, stars, and profile social features.
