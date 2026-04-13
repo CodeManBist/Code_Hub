@@ -9,12 +9,20 @@ async function readApiResponse(response) {
   const contentType = response.headers.get("content-type") || "";
 
   if (contentType.includes("application/json")) {
-    return response.json();
+    try {
+      return await response.json();
+    } catch {
+      return {};
+    }
   }
 
   const rawText = await response.text();
+  if (!rawText) {
+    return {};
+  }
+
   return {
-    error: rawText?.slice(0, 200) || `Unexpected response format (${response.status})`
+    error: rawText.slice(0, 200) || `Unexpected response format (${response.status})`
   };
 }
 
@@ -84,15 +92,14 @@ const RepoIssues = () => {
         body: JSON.stringify({
           title: issueTitle,
           description: issueDescription,
-          status: issueStatus,
-          author: localStorage.getItem("userId")
+          status: issueStatus
         })
       });
 
       const data = await readApiResponse(response);
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to create issue");
+        throw new Error(data.error || data.message || "Failed to create issue");
       }
 
       setIssueTitle("");
@@ -115,7 +122,7 @@ const RepoIssues = () => {
   const handleUpdateIssue = async (issueId) => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/issue/update/${issueId}`, {
-        method: "PATCH",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -130,7 +137,7 @@ const RepoIssues = () => {
       const data = await readApiResponse(response);
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to update issue");
+        throw new Error(data.error || data.message || "Failed to update issue");
       }
 
       setEditingIssueId(null);
@@ -158,7 +165,7 @@ const RepoIssues = () => {
       const data = await readApiResponse(response);
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to delete issue");
+        throw new Error(data.error || data.message || "Failed to delete issue");
       }
 
       fetchIssues();

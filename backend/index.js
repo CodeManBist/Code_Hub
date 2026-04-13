@@ -170,7 +170,7 @@ function startServer() {
       "http://localhost:5173", // local frontend
       "https://code-hub-taupe.vercel.app" // deployed frontend
     ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true
   }));
 

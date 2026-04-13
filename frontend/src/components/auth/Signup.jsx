@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import githubLogo from "../../assets/github-mark-white.svg";
 import { useAuth } from "../../authContext";
 
@@ -41,7 +42,7 @@ function Signup() {
 
     } catch (error) {
       console.error("Signup failed:", error);
-      alert(error.message || "Signup failed");
+      toast.error(error.message || "Signup failed");
     } finally {
       setLoading(false);
     }
@@ -96,7 +97,7 @@ function Signup() {
 
       <div className="w-[370px] p-5 rounded-xl border border-[#30363d] bg-[#161b22] text-gray-300 text-center">
         Already have an account?{" "}
-        <Link to="/login" className="text-blue-400 font-semibold hover:underline">
+        <Link to="/auth" className="text-blue-400 font-semibold hover:underline">
           Login
         </Link>
       </div>

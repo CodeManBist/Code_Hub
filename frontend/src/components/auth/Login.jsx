@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import githubLogo from "../../assets/github-mark-white.svg";
 import { useAuth } from "../../authContext";
 
@@ -25,8 +26,6 @@ function Login() {
         body: JSON.stringify({ email, password }),
       });
 
-      console.log(email, password);
-
       const data = await response.json();
 
       if (!response.ok) {
@@ -42,7 +41,7 @@ function Login() {
 
     } catch (error) {
       console.error("Login failed:", error);
-      alert(error.message || "Login failed");
+      toast.error(error.message || "Login failed");
     } finally {
       setLoading(false);
     }
