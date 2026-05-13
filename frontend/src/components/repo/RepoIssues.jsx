@@ -218,7 +218,7 @@ const RepoIssues = () => {
                     onClick={() => setSelectedIssue(null)}
                     className="text-xs px-2 py-1 rounded-md border border-[#30363d] text-gray-300 hover:bg-[#1f2937]"
                   >
-                    Close
+                    X
                   </button>
                 </div>
                 <p className="text-sm text-gray-400 mt-2">{selectedIssue.description}</p>
