@@ -1,7 +1,7 @@
 {
   "bucket": "code-hub-storage-493499579453-eu-north-1-an",
   "stateBackend": "local",
-  "storageMode": "legacy",
-  "userId": null,
-  "repoId": null
+  "storageMode": "namespaced",
+  "userId": "6a53d8110a9990534b4861ec",
+  "repoId": "6a53d8870a9990534b4861f9"
 }

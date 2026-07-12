@@ -149,12 +149,7 @@ const RepoIssues = () => {
   };
 
   const handleDeleteIssue = async (issueId) => {
-    const shouldDelete = window.confirm("Delete this issue?");
-    if (!shouldDelete) {
-      return;
-    }
-
-    try {
+    const deleteIssue = async () => { try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/issue/delete/${issueId}`, {
         method: "DELETE",
         headers: {
@@ -172,7 +167,11 @@ const RepoIssues = () => {
       toast.success("Issue deleted");
     } catch (error) {
       toast.error(error.message || "Failed to delete issue");
-    }
+    }};
+    toast.warn(
+      <div><p className="mb-2">Delete this issue?</p><div className="flex gap-2"><button className="rounded bg-red-600 px-2 py-1 text-xs text-white" onClick={() => { toast.dismiss(); deleteIssue(); }}>Delete issue</button><button className="rounded border border-gray-500 px-2 py-1 text-xs" onClick={() => toast.dismiss()}>Cancel</button></div></div>,
+      { autoClose: false, closeOnClick: false, closeButton: false }
+    );
   };
 
   const handleOpenIssueDetails = async (issueId) => {

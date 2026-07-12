@@ -2,12 +2,15 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../Navbar";
 import { useNavigate, useParams } from "react-router-dom";
 import HeatMap from "@uiw/react-heat-map";
+import { toast } from "react-toastify";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editUsername, setEditUsername] = useState("");
   const [editEmail, setEditEmail] = useState("");
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isFollowMenuOpen, setIsFollowMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -28,6 +31,12 @@ const Profile = () => {
         setUser(data.data);
         setEditUsername(data.data?.username || "");
         setEditEmail(data.data?.email || "");
+        const currentUserId = localStorage.getItem("userId");
+        if (currentUserId && String(currentUserId) !== String(profileUserId)) {
+          const currentResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/userProfile/${currentUserId}`, { headers: { Authorization: `Bearer ${token}` } });
+          const currentData = await currentResponse.json();
+          setIsFollowing(Array.isArray(currentData.data?.following) && currentData.data.following.some((userId) => String(userId) === String(profileUserId)));
+        }
       } catch (error) {
         console.error("Error fetching user profile:", error);
       }
@@ -67,9 +76,11 @@ const Profile = () => {
       });
       const refreshedData = await refreshedProfile.json();
       setUser(refreshedData.data);
+      setIsFollowing(true);
+      toast.success(result.message || `You are now following ${refreshedData.data?.username || user.username}.`);
     } catch (error) {
       console.error("Error following user:", error);
-      window.alert(error.message || "Failed to follow user.");
+      toast.error(error.message || "Failed to follow user.");
     }
   };
 
@@ -98,20 +109,16 @@ const Profile = () => {
 
       setUser(data.data);
       setIsEditingProfile(false);
-      window.alert("Profile updated successfully.");
+      toast.success("Profile updated successfully.");
     } catch (error) {
       console.error("Error updating profile:", error);
-      window.alert(error.message || "Failed to update profile.");
+      toast.error(error.message || "Failed to update profile.");
     }
   };
 
   const handleDeleteProfile = async () => {
     const token = localStorage.getItem("token");
-    const shouldDelete = window.confirm("Delete your account permanently?");
-    if (!shouldDelete) {
-      return;
-    }
-
+    const deleteAccount = async () => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/deleteProfile/${profileUserId}`, {
         method: "DELETE",
@@ -128,11 +135,34 @@ const Profile = () => {
 
       localStorage.removeItem("userId");
       localStorage.removeItem("token");
-      window.alert("Account deleted successfully.");
+      toast.success("Account deleted successfully.");
       navigate("/auth", { replace: true });
     } catch (error) {
       console.error("Error deleting profile:", error);
-      window.alert(error.message || "Failed to delete account.");
+      toast.error(error.message || "Failed to delete account.");
+    }
+    };
+
+    toast.warn(
+      <div><p className="mb-2">Delete your account permanently?</p><div className="flex gap-2"><button className="rounded bg-red-600 px-2 py-1 text-xs text-white" onClick={() => { toast.dismiss(); deleteAccount(); }}>Delete account</button><button className="rounded border border-gray-500 px-2 py-1 text-xs" onClick={() => toast.dismiss()}>Cancel</button></div></div>,
+      { autoClose: false, closeOnClick: false, closeButton: false }
+    );
+  };
+
+  const handleUnfollow = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/follow/${user._id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}` },
+        body: JSON.stringify({ currentUserId: localStorage.getItem("userId") })
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || "Failed to unfollow user");
+      setIsFollowing(false);
+      setIsFollowMenuOpen(false);
+      toast.success(result.message || `Unfollowed ${user.username}.`);
+    } catch (error) {
+      toast.error(error.message || "Failed to unfollow user.");
     }
   };
 
@@ -159,14 +189,20 @@ const Profile = () => {
                     {user?.username}
                   </h2>
 
-                  {!isOwnProfile && (
-                    <button
-                      onClick={handleFollow}
-                      className="bg-[#238636] text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-[#2ea043] transition border border-transparent"
-                    >
-                      Follow
-                    </button>
-                  )}
+                  {!isOwnProfile && (isFollowing ? (
+                    <div className="relative inline-flex">
+                      <button onClick={() => setIsFollowMenuOpen((open) => !open)} aria-expanded={isFollowMenuOpen} className="bg-[#21262d] text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-[#30363d] transition border border-[#30363d]">
+                        Following <span className="ml-1">▾</span>
+                      </button>
+                      {isFollowMenuOpen && (
+                        <div className="absolute left-0 top-full z-20 mt-2 min-w-full overflow-hidden rounded-md border border-[#30363d] bg-[#161b22] p-1 shadow-xl shadow-black/40">
+                          <button onClick={handleUnfollow} className="block w-full whitespace-nowrap rounded px-3 py-2 text-left text-sm text-red-300 hover:bg-red-950/40">Unfollow</button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <button onClick={handleFollow} className="bg-[#238636] text-white px-5 py-2 rounded-md text-sm font-medium hover:bg-[#2ea043] transition border border-transparent">Follow</button>
+                  ))}
                 </div>
 
                 <div className="flex justify-center sm:justify-start gap-6 text-sm text-gray-300 mb-4">
