@@ -121,12 +121,12 @@ Primary routes are mounted in `backend/routes/`:
 Run from `backend/`:
 
 ```bash
-npm start init
-npm start add ./path/to/file.txt
-npm start commit "my commit message"
-npm start push
-npm start pull
-npm start revert <commitId>
+node index.js init
+node index.js add ./path/to/file.txt
+node index.js commit "my commit message"
+node index.js push
+node index.js pull
+node index.js revert <commitId>
 ```
 
 Optional namespaced usage:

@@ -1,1 +1,7 @@
-{"bucket":"s3 bucket"}
+{
+  "bucket": "code-hub-storage-493499579453-eu-north-1-an",
+  "stateBackend": "local",
+  "storageMode": "legacy",
+  "userId": null,
+  "repoId": null
+}
