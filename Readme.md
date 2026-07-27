@@ -231,24 +231,26 @@ This diagram shows how `resolveGitOptions` merges different configuration source
 
 ```mermaid
 graph TD
-    "Start" --> "readRepoConfig"["readRepoConfig('.myGit/config.json')"]
-    "readRepoConfig" --> "resolveGitOptions"["resolveGitOptions(config, argv)"]
-    
-    subgraph "gitConfig.js"
-        "resolveGitOptions" --> "Check_Argv"{"Flag in argv?"}
-        "Check_Argv" -- "Yes" --> "Use_Argv"["Use CLI Flag"]
-        "Check_Argv" -- "No" --> "Check_Config"{"Key in config.json?"}
-        "Check_Config" -- "Yes" --> "Use_Config"["Use Config File"]
-        "Check_Config" -- "No" --> "Check_Env"{"Env Var set?"}
-        "Check_Env" -- "Yes" --> "Use_Env"["Use process.env"]
-        "Check_Env" -- "No" --> "Use_Default"["Use Hardcoded Default"]
+
+    Start([Start]) --> ReadRepoConfig["readRepoConfig('.myGit/config.json')"]
+    ReadRepoConfig --> ResolveGitOptions["resolveGitOptions(config, argv)"]
+
+    subgraph GitConfig["gitConfig.js"]
+        ResolveGitOptions --> CheckArgv{"Flag in argv?"}
+        CheckArgv -- Yes --> UseArgv["Use CLI Flag"]
+        CheckArgv -- No --> CheckConfig{"Key in config.json?"}
+        CheckConfig -- Yes --> UseConfig["Use Config File"]
+        CheckConfig -- No --> CheckEnv{"Env Var set?"}
+        CheckEnv -- Yes --> UseEnv["Use process.env"]
+        CheckEnv -- No --> UseDefault["Use Hardcoded Default"]
     end
-    
-    "Use_Argv" --> "Result"
-    "Use_Config" --> "Result"
-    "Use_Env" --> "Result"
-    "Use_Default" --> "Result"
-    "Result" --> "resolvePrefixes"["resolvePrefixes(options)"]
+
+    UseArgv --> Result([Result])
+    UseConfig --> Result
+    UseEnv --> Result
+    UseDefault --> Result
+
+    Result --> ResolvePrefixes["resolvePrefixes(options)"]
 ```
 
 ## Commit Process: Local vs S3 Backend
@@ -257,31 +259,33 @@ This diagram maps the `commitRepo` function logic to the physical storage entiti
 
 ```mermaid
 graph LR
-    subgraph "CLI Entity Space"
-        "commitRepo"["commitRepo(message, argv)"]
-        "uuid"["uuidv4()"]
+
+    subgraph CLI["CLI Entity Space"]
+        CommitRepo["commitRepo(message, argv)"]
+        UUID["uuidv4()"]
     end
 
-    subgraph "Local Backend (.myGit)"
-        "StagingDir"["staging/"]
-        "CommitsDir"["commits/{commitId}/"]
-        "CommitJSON_L"["commit.json"]
+    subgraph Local["Local Backend (.myGit)"]
+        StagingDir["staging/"]
+        CommitsDir["commits/{commitId}/"]
+        CommitJSONLocal["commit.json"]
     end
 
-    subgraph "S3 Backend (AWS)"
-        "S3_Staging"["Prefix: staging/"]
-        "S3_Commits"["Prefix: commits/{commitId}/"]
-        "CommitJSON_S"["Object: commit.json"]
+    subgraph S3["S3 Backend (AWS)"]
+        S3Staging["Prefix: staging/"]
+        S3Commits["Prefix: commits/{commitId}/"]
+        CommitJSONS3["Object: commit.json"]
     end
 
-    "commitRepo" --> "uuid"
-    "commitRepo" -- "stateBackend=local" --> "StagingDir"
-    "StagingDir" -- "fs.copyFile" --> "CommitsDir"
-    "commitRepo" -- "fs.writeFile" --> "CommitJSON_L"
+    CommitRepo --> UUID
 
-    "commitRepo" -- "stateBackend=s3" --> "S3_Staging"
-    "S3_Staging" -- "CopyObjectCommand" --> "S3_Commits"
-    "commitRepo" -- "PutObjectCommand" --> "CommitJSON_S"
+    CommitRepo -- stateBackend=local --> StagingDir
+    StagingDir -- fs.copyFile --> CommitsDir
+    CommitRepo -- fs.writeFile --> CommitJSONLocal
+
+    CommitRepo -- stateBackend=s3 --> S3Staging
+    S3Staging -- CopyObjectCommand --> S3Commits
+    CommitRepo -- PutObjectCommand --> CommitJSONS3
 ```
 
 ------------------------------------------------------------------------
